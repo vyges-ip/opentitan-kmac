@@ -5,6 +5,26 @@
   "source": {
     "type": "git",
     "url": "https://github.com/lowRISC/opentitan",
-    "commit": "304378684dfcf5be73bbd14faffa71790793d8c6"
-  }
+    "commit": "304378684dfcf5be73bbd14faffa71790793d8c6",
+    "rtl_path": "rtl",
+    "rtl_files": [
+      "rtl/keccak_2share.sv",
+      "rtl/keccak_round.sv",
+      "rtl/kmac.sv",
+      "rtl/kmac_app.sv",
+      "rtl/kmac_core.sv",
+      "rtl/kmac_entropy.sv",
+      "rtl/kmac_errchk.sv",
+      "rtl/kmac_msgfifo.sv",
+      "rtl/kmac_pkg.sv",
+      "rtl/kmac_reduced.sv",
+      "rtl/kmac_reg_pkg.sv",
+      "rtl/kmac_reg_top.sv",
+      "rtl/kmac_staterd.sv",
+      "rtl/sha3.sv",
+      "rtl/sha3_pkg.sv",
+      "rtl/sha3pad.sv"
+    ]
+  },
+  "updated": "2026-02-19T06:03:45Z"
 }
