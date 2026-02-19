@@ -6,6 +6,8 @@
     "type": "git",
     "url": "https://github.com/lowRISC/opentitan",
     "commit": "304378684dfcf5be73bbd14faffa71790793d8c6",
+    "ip_path": "hw/ip/kmac",
+    "private": false,
     "rtl_path": "rtl",
     "rtl_files": [
       "rtl/keccak_2share.sv",
@@ -26,5 +28,50 @@
       "rtl/sha3pad.sv"
     ]
   },
-  "updated": "2026-02-19T06:03:45Z"
+  "updated": "2026-02-19T06:12:02Z",
+  "$schema": "https://vyges.com/schema/v1/vyges-metadata.schema.json",
+  "x-version": "1.0.0",
+  "description": "Kmac. OpenTitan IP block from hw/ip/kmac.",
+  "template": "opentitan-ip-template@1.0.0",
+  "target": [
+    "fpga",
+    "asic"
+  ],
+  "design_type": [
+    "digital"
+  ],
+  "maturity": "imported",
+  "created": "2026-02-19T06:12:02Z",
+  "interfaces": [
+    {
+      "type": "bus",
+      "direction": "input",
+      "protocol": "TL-UL",
+      "width": 32,
+      "description": "TL-UL host interface for register access"
+    },
+    {
+      "type": "bus",
+      "direction": "output",
+      "protocol": "KMAC",
+      "description": "Keccak message authentication interface"
+    }
+  ],
+  "categories": {
+    "primary": "crypto",
+    "secondary": [
+      "kmac",
+      "authentication"
+    ],
+    "tags": [
+      "kmac",
+      "authentication",
+      "opentitan",
+      "lowrisc-opentitan"
+    ]
+  },
+  "community": {
+    "issues": "https://github.com/vyges-ip/opentitan-kmac/issues",
+    "contributions": "https://github.com/vyges-ip/opentitan-kmac/pulls"
+  }
 }
