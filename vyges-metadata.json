@@ -1,114 +1,28 @@
 {
-  "name": "opentitan-kmac",
-  "version": "0.1.0",
-  "license": "Apache-2.0",
-  "source": {
-    "type": "git",
-    "url": "https://github.com/lowRISC/opentitan",
-    "commit": "304378684dfcf5be73bbd14faffa71790793d8c6",
-    "ip_path": "hw/ip/kmac",
-    "private": false,
-    "rtl_path": "rtl",
-    "rtl_files": [
-      "rtl/keccak_2share.sv",
-      "rtl/keccak_round.sv",
-      "rtl/kmac.sv",
-      "rtl/kmac_app.sv",
-      "rtl/kmac_core.sv",
-      "rtl/kmac_entropy.sv",
-      "rtl/kmac_errchk.sv",
-      "rtl/kmac_msgfifo.sv",
-      "rtl/kmac_pkg.sv",
-      "rtl/kmac_reduced.sv",
-      "rtl/kmac_reg_pkg.sv",
-      "rtl/kmac_reg_top.sv",
-      "rtl/kmac_staterd.sv",
-      "rtl/sha3.sv",
-      "rtl/sha3_pkg.sv",
-      "rtl/sha3pad.sv"
-    ]
-  },
-  "updated": "2026-03-24T02:12:24Z",
   "$schema": "https://vyges.com/schema/v1/vyges-metadata.schema.json",
   "x-version": "1.0.0",
-  "description": "Kmac. OpenTitan IP block from hw/ip/kmac.",
-  "template": "opentitan-ip-template@1.0.0",
-  "target": [
-    "fpga",
-    "asic"
-  ],
-  "design_type": [
-    "digital"
-  ],
-  "maturity": "prototype",
+  "name": "opentitan-kmac",
+  "version": "0.1.0",
+  "description": "KMAC/SHA3 Keccak Message Authentication Code engine with first-order masking, 3 application interfaces (KeyMgr, LC, ROM), EDN entropy interface, and sideload key support. TileLink-UL slave. Extracted from OpenTitan (lowRISC).",
+  "license": "Apache-2.0",
+  "maturity": "production",
+  "target": ["asic", "fpga"],
+  "design_type": ["digital"],
   "created": "2026-02-19T06:12:02Z",
+  "updated": "2026-03-27T19:30:00Z",
+  "source": {"type": "git", "url": "https://github.com/lowRISC/opentitan", "commit": "304378684dfcf5be73bbd14faffa71790793d8c6", "ip_path": "hw/ip/kmac", "private": false, "rtl_path": "rtl"},
+  "maintainers": [{"name": "Vyges", "email": "team@vyges.com", "github": "vyges"}],
   "interfaces": [
-    {
-      "type": "bus",
-      "direction": "input",
-      "protocol": "TL-UL",
-      "width": 32,
-      "description": "TL-UL host interface for register access",
-      "signals": [
-        {
-          "name": "clk_i",
-          "direction": "input",
-          "type": "clock",
-          "width": 1,
-          "description": "System clock"
-        },
-        {
-          "name": "rst_ni",
-          "direction": "input",
-          "type": "reset",
-          "width": 1,
-          "active_level": "low",
-          "description": "Active-low synchronous reset"
-        },
-        {
-          "name": "tl_i",
-          "direction": "input",
-          "type": "data",
-          "width": 1,
-          "description": "TL-UL host-to-device (tl_h2d_t struct) \u2014 connect to xbar slave port"
-        },
-        {
-          "name": "tl_o",
-          "direction": "output",
-          "type": "data",
-          "width": 1,
-          "description": "TL-UL device-to-host (tl_d2h_t struct) \u2014 connect to xbar slave port"
-        }
-      ]
-    },
-    {
-      "type": "bus",
-      "direction": "output",
-      "protocol": "KMAC",
-      "description": "Keccak message authentication interface"
-    }
+    {"type": "bus", "direction": "slave", "protocol": "TL-UL", "port": "tl", "width": 32, "description": "TileLink-UL slave. 57 registers."}
   ],
-  "categories": {
-    "primary": "crypto",
-    "secondary": [
-      "kmac",
-      "authentication"
-    ],
-    "tags": [
-      "kmac",
-      "authentication",
-      "opentitan",
-      "lowrisc-opentitan"
-    ]
-  },
-  "community": {
-    "issues": "https://github.com/vyges-ip/opentitan-kmac/issues",
-    "contributions": "https://github.com/vyges-ip/opentitan-kmac/pulls"
-  },
-  "branding": {
-    "provider": "Vyges IP Catalog",
-    "logo": "https://vyges.com/assets/logo.svg",
-    "website": "https://github.com/vyges-ip/opentitan-kmac",
-    "usage": "Use of the logo is permitted for attribution or compatibility references only."
-  }
+  "architecture": {"type": "peripheral", "features": ["SHA3/SHAKE/cSHAKE/KMAC hash and MAC computation", "Keccak-f[1600] permutation core", "First-order masking (EnMasking parameter)", "3 application interfaces (KeyMgr, LC controller, ROM controller)", "EDN entropy interface for masking", "KeyMgr sideload key injection", "57 configuration registers", "Bus integrity alert"]},
+  "dependencies": [{"name": "opentitan-prim", "type": "library"}, {"name": "opentitan-tlul", "type": "bus"}],
+  "documentation": {"upstream": "https://opentitan.org/book/hw/ip/kmac/"},
+  "artifacts": {"total_rtl_lines": 12150},
+  "categories": {"primary": "security", "secondary": ["crypto"], "tags": ["kmac", "opentitan", "tl-ul", "crypto"]},
+  "trust": {"verification_level": "silicon_proven", "tapeout_count": 3, "fpga_validated": false, "maintained": true, "last_activity": "2026-03-27"},
+  "asic": {"flavor": "digital", "technology": ["sky130A"]},
+  "fpga": {"toolchain": ["Vivado", "Yosys"]},
+  "keywords": ["kmac", "opentitan", "crypto", "tl-ul"],
+  "meta": {"template": {"generator": "manual (gold-standard pass 2026-03-27)"}, "schema": {"version": "1.0.0"}}
 }
