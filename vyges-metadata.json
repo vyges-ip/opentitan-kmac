@@ -3,26 +3,291 @@
   "x-version": "1.0.0",
   "name": "opentitan-kmac",
   "version": "0.1.0",
-  "description": "KMAC/SHA3 Keccak Message Authentication Code engine with first-order masking, 3 application interfaces (KeyMgr, LC, ROM), EDN entropy interface, and sideload key support. TileLink-UL slave. Extracted from OpenTitan (lowRISC).",
+  "description": "The opentitan-kmac is a hardware implementation of the Keccak Message Authentication Code (KMAC) cryptographic function, supporting SHA-3 and customizable key lengths for secure message authentication.",
   "license": "Apache-2.0",
   "maturity": "production",
-  "target": ["asic", "fpga"],
-  "design_type": ["digital"],
-  "created": "2026-02-19T06:12:02Z",
-  "updated": "2026-03-27T19:30:00Z",
-  "source": {"type": "git", "url": "https://github.com/lowRISC/opentitan", "commit": "304378684dfcf5be73bbd14faffa71790793d8c6", "ip_path": "hw/ip/kmac", "private": false, "rtl_path": "rtl"},
-  "maintainers": [{"name": "Vyges", "email": "team@vyges.com", "github": "vyges"}],
-  "interfaces": [
-    {"type": "bus", "direction": "slave", "protocol": "TL-UL", "port": "tl", "width": 32, "description": "TileLink-UL slave. 57 registers."}
+  "target": [
+    "asic",
+    "fpga"
   ],
-  "architecture": {"type": "peripheral", "features": ["SHA3/SHAKE/cSHAKE/KMAC hash and MAC computation", "Keccak-f[1600] permutation core", "First-order masking (EnMasking parameter)", "3 application interfaces (KeyMgr, LC controller, ROM controller)", "EDN entropy interface for masking", "KeyMgr sideload key injection", "57 configuration registers", "Bus integrity alert"]},
-  "dependencies": [{"name": "opentitan-prim", "type": "library"}, {"name": "opentitan-tlul", "type": "bus"}],
-  "documentation": {"upstream": "https://opentitan.org/book/hw/ip/kmac/"},
-  "artifacts": {"total_rtl_lines": 12150},
-  "categories": {"primary": "security", "secondary": ["crypto"], "tags": ["kmac", "opentitan", "tl-ul", "crypto"]},
-  "trust": {"verification_level": "silicon_proven", "tapeout_count": 3, "fpga_validated": false, "maintained": true, "last_activity": "2026-03-27"},
-  "asic": {"flavor": "digital", "technology": ["sky130A"]},
-  "fpga": {"toolchain": ["Vivado", "Yosys"]},
-  "keywords": ["kmac", "opentitan", "crypto", "tl-ul"],
-  "meta": {"template": {"generator": "manual (gold-standard pass 2026-03-27)"}, "schema": {"version": "1.0.0"}}
+  "design_type": [
+    "digital"
+  ],
+  "created": "2026-03-27T23:05:17Z",
+  "updated": "2026-03-27T23:05:17Z",
+  "source": {
+    "type": "git",
+    "url": "https://github.com/lowRISC/opentitan",
+    "commit": "7fbd85829ec6354ef6497df69536cefe862c1f5a",
+    "ip_path": "hw/ip/kmac",
+    "private": false,
+    "containsEncryptedPayload": false,
+    "indexing": true
+  },
+  "maintainers": [
+    {
+      "name": "Vyges",
+      "email": "team@vyges.com",
+      "url": "https://vyges.com",
+      "github": "vyges"
+    }
+  ],
+  "interfaces": [
+    {
+      "type": "bus",
+      "direction": "slave",
+      "protocol": "TL-UL",
+      "port": "tl_i",
+      "width": 32,
+      "description": "TileLink input interface for host-to-device communication."
+    },
+    {
+      "type": "bus",
+      "direction": "master",
+      "protocol": "TL-UL",
+      "port": "tl_o",
+      "width": 32,
+      "description": "TileLink output interface for device-to-host communication."
+    },
+    {
+      "type": "bus",
+      "direction": "master",
+      "protocol": "TL-UL",
+      "port": "tl_win_o",
+      "width": 32,
+      "description": "TileLink output interface for windowed access."
+    },
+    {
+      "type": "bus",
+      "direction": "slave",
+      "protocol": "TL-UL",
+      "port": "tl_win_i",
+      "width": 32,
+      "description": "TileLink input interface for windowed access."
+    },
+    {
+      "type": "clock",
+      "direction": "input",
+      "protocol": "N/A",
+      "port": "clk_i",
+      "width": 1,
+      "description": "Clock input signal."
+    },
+    {
+      "type": "reset",
+      "direction": "input",
+      "protocol": "N/A",
+      "port": "rst_ni",
+      "width": 1,
+      "description": "Active-low reset signal."
+    },
+    {
+      "type": "reset",
+      "direction": "input",
+      "protocol": "N/A",
+      "port": "rst_shadowed_ni",
+      "width": 1,
+      "description": "Active-low shadowed reset signal."
+    },
+    {
+      "type": "custom",
+      "direction": "output",
+      "protocol": "custom",
+      "port": "reg2hw",
+      "width": 32,
+      "description": "Register-to-hardware write interface."
+    },
+    {
+      "type": "custom",
+      "direction": "input",
+      "protocol": "custom",
+      "port": "hw2reg",
+      "width": 32,
+      "description": "Hardware-to-register read interface."
+    },
+    {
+      "type": "interrupt",
+      "direction": "output",
+      "protocol": "N/A",
+      "port": "intg_err_o",
+      "width": 1,
+      "description": "Integrity error output signal."
+    }
+  ],
+  "parameters": [
+    {
+      "name": "AW",
+      "type": "int",
+      "default": 12,
+      "description": "Address width for register interface."
+    },
+    {
+      "name": "DW",
+      "type": "int",
+      "default": 32,
+      "description": "Data width for register interface."
+    },
+    {
+      "name": "DBW",
+      "type": "int",
+      "default": 4,
+      "description": "Byte width for register interface."
+    },
+    {
+      "name": "NumWordsKey",
+      "type": "int",
+      "default": 16,
+      "description": "Number of words in the key."
+    },
+    {
+      "name": "NumWordsPrefix",
+      "type": "int",
+      "default": 11,
+      "description": "Number of words in the prefix."
+    },
+    {
+      "name": "NumEntriesMsgFifo",
+      "type": "int",
+      "default": 10,
+      "description": "Number of entries in the message FIFO."
+    },
+    {
+      "name": "NumBytesMsgFifoEntry",
+      "type": "int",
+      "default": 8,
+      "description": "Number of bytes per message FIFO entry."
+    },
+    {
+      "name": "HashCntW",
+      "type": "int",
+      "default": 10,
+      "description": "Width of the hash counter."
+    },
+    {
+      "name": "NumSeedsEntropy",
+      "type": "int",
+      "default": 6,
+      "description": "Number of entropy seeds."
+    },
+    {
+      "name": "NumAlerts",
+      "type": "int",
+      "default": 2,
+      "description": "Number of alert signals."
+    }
+  ],
+  "performance": {},
+  "architecture": {
+    "type": "peripheral",
+    "features": [
+      "Keccak-based cryptographic operations",
+      "Support for SHA-3 and KMAC",
+      "Configurable key lengths up to 512 bits",
+      "Message FIFO for high-throughput operations",
+      "Integrity error detection and alert generation"
+    ]
+  },
+  "asic": {
+    "flavor": "digital",
+    "technology": [
+      "sky130A"
+    ]
+  },
+  "fpga": {
+    "toolchain": [
+      "Vivado"
+    ],
+    "devices": [
+      "Artix-7"
+    ]
+  },
+  "dependencies": [
+    {
+      "name": "tlul_pkg",
+      "type": "library",
+      "description": "TileLink Ultra-Lite protocol package."
+    },
+    {
+      "name": "kmac_reg_pkg",
+      "type": "library",
+      "description": "KMAC register package containing data structures and parameters."
+    },
+    {
+      "name": "sha3_pkg",
+      "type": "library",
+      "description": "SHA-3 package containing parameters and definitions for SHA-3 operations."
+    },
+    {
+      "name": "prim_assert",
+      "type": "library",
+      "description": "Primitive assertions for design verification."
+    },
+    {
+      "name": "prim_reg_we_check",
+      "type": "library",
+      "description": "Primitive for write enable checking in registers."
+    },
+    {
+      "name": "tlul_adapter_reg",
+      "type": "core",
+      "description": "TileLink adapter for register interface."
+    },
+    {
+      "name": "tlul_socket_1n",
+      "type": "core",
+      "description": "TileLink 1-to-N socket for interconnect."
+    },
+    {
+      "name": "tlul_rsp_intg_gen",
+      "type": "core",
+      "description": "TileLink response integrity generator."
+    },
+    {
+      "name": "tlul_cmd_intg_chk",
+      "type": "core",
+      "description": "TileLink command integrity checker."
+    }
+  ],
+  "test": {
+    "testbenches": [],
+    "status": "upstream_passing",
+    "coverage": "functional"
+  },
+  "documentation": {
+    "upstream": "https://github.com/lowRISC/opentitan/tree/7fbd85829ec6354ef6497df69536cefe862c1f5a/hw/ip/kmac"
+  },
+  "artifacts": {
+    "total_rtl_lines": 12150
+  },
+  "categories": [
+    {
+      "main_category": "Security IP",
+      "sub_category": "Crypto Engines"
+    }
+  ],
+  "keywords": [
+    "KMAC",
+    "SHA-3",
+    "Keccak",
+    "cryptography",
+    "security"
+  ],
+  "trust": {
+    "verification_level": "silicon_proven",
+    "tapeout_count": 0,
+    "fpga_validated": false,
+    "formal_verified": false,
+    "maintained": true,
+    "last_activity": "2026-03-27T23:05:17Z"
+  },
+  "meta": {
+    "template": {
+      "generator": "github-models-ai",
+      "template_version": "1.0.0",
+      "generated_at": "2026-03-27T23:05:17Z"
+    },
+    "schema": {
+      "version": "1.0.0"
+    }
+  }
 }
