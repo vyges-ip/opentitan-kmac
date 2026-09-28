@@ -58,7 +58,7 @@ module kmac
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // KeyMgr sideload (secret key) interface
-  input keymgr_pkg::hw_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // KeyMgr KDF data path
   input  app_req_t [NumAppIntf-1:0] app_i,
@@ -1545,6 +1545,9 @@ module kmac
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
   `ASSERT_KNOWN(EnMaskingKnown_A, en_masking_o)
+  `ASSERT_KNOWN(AppRspKnown_A, app_o)
+  `ASSERT_KNOWN(EntropyReqKnown_A, entropy_o)
+  `ASSERT_KNOWN(IdleKnown_A, idle_o)
 
   // Parameter as desired
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
