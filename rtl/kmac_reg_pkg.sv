@@ -220,6 +220,12 @@ package kmac_reg_pkg;
     } fifo_depth;
     struct packed {
       logic        d;
+    } state_write;
+    struct packed {
+      logic        d;
+    } sha3_stopped;
+    struct packed {
+      logic        d;
     } sha3_squeeze;
     struct packed {
       logic        d;
@@ -259,9 +265,9 @@ package kmac_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [62:57]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [56:56]
-    kmac_hw2reg_status_reg_t status; // [55:44]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [64:59]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [58:58]
+    kmac_hw2reg_status_reg_t status; // [57:44]
     kmac_hw2reg_entropy_refresh_hash_cnt_reg_t entropy_refresh_hash_cnt; // [43:33]
     kmac_hw2reg_err_code_reg_t err_code; // [32:0]
   } kmac_hw2reg_t;
@@ -330,9 +336,10 @@ package kmac_reg_pkg;
   parameter logic [0:0] KMAC_INTR_TEST_KMAC_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_INTR_TEST_FIFO_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_INTR_TEST_KMAC_ERR_RESVAL = 1'h 0;
-  parameter logic [1:0] KMAC_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] KMAC_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] KMAC_ALERT_TEST_RECOV_OPERATION_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] KMAC_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [10:0] KMAC_CMD_RESVAL = 11'h 0;
@@ -449,7 +456,7 @@ package kmac_reg_pkg;
     4'b 0001, // index[ 0] KMAC_INTR_STATE
     4'b 0001, // index[ 1] KMAC_INTR_ENABLE
     4'b 0001, // index[ 2] KMAC_INTR_TEST
-    4'b 0001, // index[ 3] KMAC_ALERT_TEST
+    4'b 1111, // index[ 3] KMAC_ALERT_TEST
     4'b 0001, // index[ 4] KMAC_CFG_REGWEN
     4'b 1111, // index[ 5] KMAC_CFG_SHADOWED
     4'b 0011, // index[ 6] KMAC_CMD

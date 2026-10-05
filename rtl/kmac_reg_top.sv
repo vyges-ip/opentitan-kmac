@@ -197,6 +197,8 @@ module kmac_reg_top (
   logic alert_test_we;
   logic alert_test_recov_operation_err_wd;
   logic alert_test_fatal_fault_err_wd;
+  logic alert_test_regwen_qs;
+  logic alert_test_regwen_wd;
   logic cfg_regwen_re;
   logic cfg_regwen_qs;
   logic cfg_shadowed_re;
@@ -254,6 +256,8 @@ module kmac_reg_top (
   logic status_sha3_idle_qs;
   logic status_sha3_absorb_qs;
   logic status_sha3_squeeze_qs;
+  logic status_sha3_stopped_qs;
+  logic status_state_write_qs;
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
@@ -385,6 +389,7 @@ module kmac_reg_top (
   ) u_intr_state_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -412,6 +417,7 @@ module kmac_reg_top (
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -439,6 +445,7 @@ module kmac_reg_top (
   ) u_intr_state_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -468,6 +475,7 @@ module kmac_reg_top (
   ) u_intr_enable_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -495,6 +503,7 @@ module kmac_reg_top (
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -522,6 +531,7 @@ module kmac_reg_top (
   ) u_intr_enable_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -596,14 +606,17 @@ module kmac_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [1:0] alert_test_flds_we;
+  logic [2:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
+  // Create REGWEN-gated WE signal
+  logic alert_test_gated_we;
+  assign alert_test_gated_we = alert_test_we && alert_test_regwen_qs;
   //   F[recov_operation_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_operation_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_operation_err_wd),
     .d      ('0),
     .qre    (),
@@ -619,7 +632,7 @@ module kmac_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_fault_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_fault_err_wd),
     .d      ('0),
     .qre    (),
@@ -629,6 +642,34 @@ module kmac_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault_err.qe = alert_test_qe;
+
+  //   F[regwen]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_alert_test_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (alert_test_we),
+    .wd     (alert_test_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (alert_test_flds_we[2]),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_test_regwen_qs)
+  );
 
 
   // R[cfg_regwen]: V(True)
@@ -1185,6 +1226,36 @@ module kmac_reg_top (
     .qs     (status_sha3_squeeze_qs)
   );
 
+  //   F[sha3_stopped]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_sha3_stopped (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.sha3_stopped.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_sha3_stopped_qs)
+  );
+
+  //   F[state_write]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_state_write (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.state_write.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_state_write_qs)
+  );
+
   //   F[fifo_depth]: 12:8
   prim_subreg_ext #(
     .DW    (5)
@@ -1274,6 +1345,7 @@ module kmac_reg_top (
   ) u_entropy_period_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_period_gated_we),
@@ -1301,6 +1373,7 @@ module kmac_reg_top (
   ) u_entropy_period_wait_timer (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_period_gated_we),
@@ -1329,6 +1402,7 @@ module kmac_reg_top (
   ) u_entropy_refresh_hash_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2189,6 +2263,7 @@ module kmac_reg_top (
   ) u_key_len (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (key_len_gated_we),
@@ -2221,6 +2296,7 @@ module kmac_reg_top (
   ) u_prefix_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_0_gated_we),
@@ -2253,6 +2329,7 @@ module kmac_reg_top (
   ) u_prefix_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_1_gated_we),
@@ -2285,6 +2362,7 @@ module kmac_reg_top (
   ) u_prefix_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_2_gated_we),
@@ -2317,6 +2395,7 @@ module kmac_reg_top (
   ) u_prefix_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_3_gated_we),
@@ -2349,6 +2428,7 @@ module kmac_reg_top (
   ) u_prefix_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_4_gated_we),
@@ -2381,6 +2461,7 @@ module kmac_reg_top (
   ) u_prefix_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_5_gated_we),
@@ -2413,6 +2494,7 @@ module kmac_reg_top (
   ) u_prefix_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_6_gated_we),
@@ -2445,6 +2527,7 @@ module kmac_reg_top (
   ) u_prefix_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_7_gated_we),
@@ -2477,6 +2560,7 @@ module kmac_reg_top (
   ) u_prefix_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_8_gated_we),
@@ -2509,6 +2593,7 @@ module kmac_reg_top (
   ) u_prefix_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_9_gated_we),
@@ -2541,6 +2626,7 @@ module kmac_reg_top (
   ) u_prefix_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_10_gated_we),
@@ -2569,6 +2655,7 @@ module kmac_reg_top (
   ) u_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2739,6 +2826,8 @@ module kmac_reg_top (
   assign alert_test_recov_operation_err_wd = reg_wdata[0];
 
   assign alert_test_fatal_fault_err_wd = reg_wdata[1];
+
+  assign alert_test_regwen_wd = reg_wdata[31];
   assign cfg_regwen_re = addr_hit[4] & reg_re & !reg_error;
   assign cfg_shadowed_re = addr_hit[5] & reg_re & !reg_error;
   assign cfg_shadowed_we = addr_hit[5] & reg_we & !reg_error;
@@ -3005,6 +3094,7 @@ module kmac_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[31] = alert_test_regwen_qs;
       end
 
       addr_hit[4]: begin
@@ -3036,6 +3126,8 @@ module kmac_reg_top (
         reg_rdata_next[0] = status_sha3_idle_qs;
         reg_rdata_next[1] = status_sha3_absorb_qs;
         reg_rdata_next[2] = status_sha3_squeeze_qs;
+        reg_rdata_next[3] = status_sha3_stopped_qs;
+        reg_rdata_next[4] = status_state_write_qs;
         reg_rdata_next[12:8] = status_fifo_depth_qs;
         reg_rdata_next[14] = status_fifo_empty_qs;
         reg_rdata_next[15] = status_fifo_full_qs;
